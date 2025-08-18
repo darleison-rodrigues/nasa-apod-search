@@ -17,7 +17,7 @@ export class Database {
 
     try {
       const insertResult = await this.d1.prepare(`
-        INSERT OR REPLACE INTO apod_metadata
+        INSERT OR REPLACE INTO apod_metadata_dev
         (date, title, explanation, image_url, r2_url, category, confidence, image_description, copyright, processed_at, is_relevant, llava_desc, objects)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(
@@ -57,7 +57,7 @@ export class Database {
 
     } catch (error) {
       await this.r2Bucket.delete(r2Key).catch(() => {});
-      await this.d1.prepare('DELETE FROM apod_metadata WHERE date = ?')
+      await this.d1.prepare('DELETE FROM apod_metadata_dev WHERE date = ?')
         .bind(apodData.date)
         .run()
         .catch(() => {});
@@ -69,7 +69,7 @@ export class Database {
   async isAlreadyProcessed(date: string): Promise<boolean> {
     try {
       const result = await this.d1.prepare(
-        'SELECT date FROM apod_metadata WHERE date = ? LIMIT 1'
+        'SELECT date FROM apod_metadata_dev WHERE date = ? LIMIT 1'
       ).bind(date).first();
 
       return !!result;
@@ -84,20 +84,20 @@ export class Database {
       return [];
     }
     const placeholders = ids.map(() => '?').join(', ');
-    const query = `SELECT * FROM apod_metadata WHERE date IN (${placeholders}) ORDER BY date DESC`;
+    const query = `SELECT * FROM apod_metadata_dev WHERE date IN (${placeholders}) ORDER BY date DESC`;
     const { results } = await this.d1.prepare(query).bind(...ids).all();
     return results || [];
   }
 
   async getAllImages(page: number = 1, limit: number = 10): Promise<any[]> {
     const offset = (page - 1) * limit;
-    const query = `SELECT * FROM apod_metadata ORDER BY date DESC LIMIT ? OFFSET ?`;
+    const query = `SELECT * FROM apod_metadata_dev ORDER BY date DESC LIMIT ? OFFSET ?`;
     const { results } = await this.d1.prepare(query).bind(limit, offset).all();
     return results || [];
   }
 
   async getImageByDate(date: string): Promise<any> {
-    const { results } = await this.d1.prepare('SELECT * FROM apod_metadata WHERE date = ?').bind(date).all();
+    const { results } = await this.d1.prepare('SELECT * FROM apod_metadata_dev WHERE date = ?').bind(date).all();
     return results && results.length > 0 ? results[0] : null;
   }
 
@@ -106,7 +106,7 @@ export class Database {
     const searchQuery = `%${query.toLowerCase()}%`;
     const { results } = await this.d1.prepare(`
       SELECT *
-      FROM apod_metadata
+      FROM apod_metadata_dev
       WHERE
         LOWER(title) LIKE ? OR
         LOWER(explanation) LIKE ? OR
