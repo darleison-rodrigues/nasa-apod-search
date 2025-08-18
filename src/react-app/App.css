@@ -52,7 +52,7 @@ body {
   width: 100%;
 }
 
-.chromadb-search-container {
+.search-container {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 15px;
@@ -66,19 +66,19 @@ body {
   box-sizing: border-box;
 }
 
-.chromadb-search-container h2 {
+.search-container h2 {
   color: #fff;
   margin-bottom: 20px;
   font-size: 1.8em;
 }
 
-.chromadb-search-container form {
+.search-container form {
   display: flex;
   gap: 15px;
   margin-bottom: 20px;
 }
 
-.chromadb-search-container input[type="text"] {
+.search-container input[type="text"] {
   flex-grow: 1;
   padding: 12px 15px;
   border: 1px solid var(--glass-border);
@@ -90,15 +90,15 @@ body {
   transition: border-color 0.3s ease;
 }
 
-.chromadb-search-container input[type="text"]::placeholder {
+.search-container input[type="text"]::placeholder {
   color: rgba(255, 255, 255, 0.6);
 }
 
-.chromadb-search-container input[type="text"]:focus {
+.search-container input[type="text"]:focus {
   border-color: var(--primary-color);
 }
 
-.chromadb-search-container button {
+.search-container button {
   padding: 12px 25px;
   background-color: var(--primary-color);
   color: white;
@@ -109,29 +109,29 @@ body {
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.chromadb-search-container button:hover {
+.search-container button:hover {
   background-color: var(--primary-hover);
   transform: translateY(-2px);
 }
 
-.chromadb-search-container button:disabled {
+.search-container button:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
   transform: none;
 }
 
-.chromadb-search-container .error-message {
+.search-container .error-message {
   color: #ff6b6b;
   margin-bottom: 15px;
   font-weight: bold;
 }
 
-.chromadb-search-container .search-results ul {
+.search-container .search-results ul {
   list-style: none;
   padding: 0;
 }
 
-.chromadb-search-container .search-results li {
+.search-container .search-results li {
   background: rgba(255, 255, 255, 0.08);
   margin-bottom: 12px;
   padding: 20px;
@@ -141,14 +141,14 @@ body {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.chromadb-search-container .search-results li strong {
+.search-container .search-results li strong {
   color: #8aff8a; /* A bright green for emphasis */
   font-size: 1.2em;
   display: block;
   margin-bottom: 8px;
 }
 
-.chromadb-search-container .search-results li p {
+.search-container .search-results li p {
   margin-top: 0;
   color: var(--text-color);
   line-height: 1.6;
