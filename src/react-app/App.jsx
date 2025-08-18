@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Timeline from './components/Timeline';
 
-
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -11,6 +10,10 @@ function App() {
   const [todayApod, setTodayApod] = useState(null);
   const [todayApodLoading, setTodayApodLoading] = useState(true);
   const [todayApodError, setTodayApodError] = useState(null);
+
+  const [timelineData, setTimelineData] = useState([]);
+  const [timelineLoading, setTimelineLoading] = useState(true);
+  const [timelineError, setTimelineError] = useState(null);
 
   useEffect(() => {
     const fetchTodayApod = async () => {
@@ -23,7 +26,7 @@ function App() {
         const data = await response.json();
         setTodayApod(data[0]); // Assuming the API returns an array for a single date
       } catch (e) {
-        setTodayApodError('Failed to fetch todays APOD. Please try again later.');
+        setTodayApodError('Failed to fetch today APOD. Please try again later.');
         console.error('Today APOD fetch error:', e);
       } finally {
         setTodayApodLoading(false);
@@ -31,6 +34,45 @@ function App() {
     };
 
     fetchTodayApod();
+  }, []);
+
+  useEffect(() => {
+    const fetchTimelineData = async () => {
+      try {
+        const today = new Date();
+        const endDate = today.toISOString().split('T')[0];
+        const startDateObj = new Date(today);
+        startDateObj.setDate(startDateObj.getDate() - 30); // Fetch last 30 days for timeline
+        const startDate = startDateObj.toISOString().split('T')[0];
+
+        const response = await fetch(`/api/apod?start_date=${startDate}&end_date=${endDate}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch APOD data for timeline: ${response.status}`);
+        }
+        const data = await response.json();
+        const dataArray = Array.isArray(data) ? data : [data];
+
+        const formattedData = dataArray.map(item => ({
+          title: item.date,
+          cardTitle: item.title,
+          cardSubtitle: item.explanation ? item.explanation.substring(0, 200) + '...' : '',
+          media: item.url ? {
+            type: 'IMAGE',
+            source: {
+              url: item.hdurl || item.url
+            }
+          } : undefined
+        }));
+        setTimelineData(formattedData);
+      } catch (err) {
+        console.error('Error fetching timeline data:', err);
+        setTimelineError('Failed to fetch timeline data');
+      } finally {
+        setTimelineLoading(false);
+      }
+    };
+
+    fetchTimelineData();
   }, []);
 
   const handleSearch = async (e) => {
@@ -111,8 +153,9 @@ function App() {
             )}
           </div>
         )}
-      {!searchQuery && searchResults.length === 0 && !todayApodLoading && !todayApodError && todayApod && (
-          <Timeline />
+
+        {!searchQuery && searchResults.length === 0 && (
+          <Timeline items={timelineData} loading={timelineLoading} error={timelineError} />
         )}
       </main>
     </div>

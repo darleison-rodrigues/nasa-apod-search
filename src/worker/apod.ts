@@ -21,6 +21,16 @@ const isNotFutureDate = (dateString: string): boolean => {
     return inputDate <= today;
 };
 
+// Type guard to check if response has data property (synchronous response)
+const hasDataProperty = (response: any): response is { data: number[][] } => {
+    return response && typeof response === 'object' && Array.isArray(response.data);
+};
+
+// Type guard to check if response is async
+const isAsyncResponse = (response: any): response is { request_id: string } => {
+    return response && typeof response === 'object' && typeof response.request_id === 'string';
+};
+
 app.post('/ingest', async (c) => {
     const db = new Database(c.env.APOD_D1, c.env.APOD_BASE, c.env.APOD_R2);
 
@@ -49,7 +59,6 @@ app.post('/ingest', async (c) => {
         const imageBlob = await imageResponse.blob();
         const imageArrayBuffer = await imageBlob.arrayBuffer();
 
-
         const llavaResponse = await c.env.AI.run('@cf/llava-hf/llava-1.5-7b-hf', {
             prompt: "What is in this image?",
             image: [...new Uint8Array(imageArrayBuffer)],
@@ -68,7 +77,17 @@ app.post('/ingest', async (c) => {
             text: [textToEmbed],
         });
 
-        const embeddings = embeddingsResponse.data[0];
+        // Handle both sync and async responses
+        let embeddings: number[];
+        if (hasDataProperty(embeddingsResponse)) {
+            // Synchronous response with data
+            embeddings = embeddingsResponse.data[0];
+        } else if (isAsyncResponse(embeddingsResponse)) {
+            // Async response - would need to poll for results
+            throw new Error('Async embedding responses not yet supported');
+        } else {
+            throw new Error('Unexpected embedding response format');
+        }
 
         const classificationResult: ClassificationResult = {
             category: 'space', // placeholder
@@ -96,7 +115,18 @@ app.get('/search', async (c) => {
         text: [query],
     });
 
-    const vector = embeddingsResponse.data[0];
+    // Handle both sync and async responses
+    let vector: number[];
+    if (hasDataProperty(embeddingsResponse)) {
+        // Synchronous response with data
+        vector = embeddingsResponse.data[0];
+    } else if (isAsyncResponse(embeddingsResponse)) {
+        // Async response - would need to poll for results
+        return c.json({ error: 'Async embedding responses not yet supported' }, 500);
+    } else {
+        return c.json({ error: 'Unexpected embedding response format' }, 500);
+    }
+
     const similarVectors = await c.env.APOD_BASE.query(vector, { topK: 10 });
 
     const ids = similarVectors.matches.map((match) => match.id);
@@ -244,6 +274,5 @@ app.get('/apod', async (c) => {
         );
     }
 });
-
 
 export default app;
