@@ -1,0 +1,27 @@
+name = 'nasa-apod-search'
+main = "./src/worker/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+
+# AI binding for machine learning models
+[ai]
+binding = "AI"
+
+# D1 Database binding for metadata storage
+[[d1_databases]]
+binding = "APOD_D1"
+database_name = "apod-metadata-dev"
+database_id = "115747db-5068-480e-b940-535053fd1df7"
+migrations_dir = "src/migrations"
+
+# Environment variables
+[vars]
+NASA_API_KEY = "2Z2f8SV5T9lqulgJmTdagO5gQkoOzZKkiQeHfoII"
+MAX_CONCURRENT_PROCESSING = "5"
+BATCH_SIZE = "10"
+RETRY_ATTEMPTS = "3"
+ENABLE_DETAILED_LOGGING = "false"
+
+[observability.logs]
+enabled = true
